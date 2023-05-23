@@ -1,0 +1,25 @@
+)
+
+#software for nvidia GPU only
+nvidia_stage=(
+    linux-headers 
+    nvidia-dkms 
+    nvidia-settings 
+    libva 
+    libva-nvidia-driver-git
+)
+
+
+
+  # Setup Nvidia if it was found
+    if [[ "$ISNVIDIA" == true ]]; then
+        echo -e "$CNT - Nvidia GPU support setup stage, this may take a while..."
+        for SOFTWR in ${nvidia_stage[@]}; do
+            install_software $SOFTWR
+        done
+    
+        # update config
+        sudo sed -i 's/MODULES=()/MODULES=(nvidia nvidia_modeset nvidia_uvm nvidia_drm)/' /etc/mkinitcpio.conf
+        sudo mkinitcpio --config /etc/mkinitcpio.conf --generate /boot/initramfs-custom.img
+        echo -e "options nvidia-drm modeset=1" | sudo tee -a /etc/modprobe.d/nvidia.conf &>> $INSTLOG
+    fi
